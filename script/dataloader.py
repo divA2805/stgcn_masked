@@ -11,7 +11,7 @@ def load_adj(dataset_name):
     adj = adj.tocsc()
     
     if dataset_name == 'metr-la':
-        n_vertex = 207
+        n_vertex = 112
     elif dataset_name == 'pems-bay':
         n_vertex = 325
     elif dataset_name == 'pemsd7-m':
