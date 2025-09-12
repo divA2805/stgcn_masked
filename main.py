@@ -114,7 +114,7 @@ def data_preparate(args, device):
     # len_train = int(data_col - len_val - len_test)
     len_test = 2
     len_val = 2
-    len_train = int(data_col - len_val - len_test)
+    len_train = data_col - len_val - len_test
     
     train, val, test = dataloader.load_data(args.dataset, len_train, len_val)
     zscore = preprocessing.StandardScaler()
