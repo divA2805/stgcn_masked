@@ -41,7 +41,7 @@ def get_parameters():
     parser.add_argument('--enable_cuda', type=bool, default=True, help='enable CUDA, default as True')
     parser.add_argument('--seed', type=int, default=42, help='set the random seed for stabilizing experiment results')
     parser.add_argument('--dataset', type=str, default='metr-la', choices=['metr-la', 'pems-bay', 'pemsd7-m'])
-    parser.add_argument('--n_his', type=int, default=1)
+    parser.add_argument('--n_his', type=int, default=2)
     parser.add_argument('--n_pred', type=int, default=1, help='the number of time interval for predcition, default as 1')
     parser.add_argument('--time_intvl', type=int, default=5)
     parser.add_argument('--Kt', type=int, default=3)
@@ -107,12 +107,15 @@ def data_preparate(args, device):
     data_col = pd.read_csv(os.path.join(dataset_path, 'vel.csv')).shape[0]
     # recommended dataset split rate as train: val: test = 60: 20: 20, 70: 15: 15 or 80: 10: 10
     # using dataset split rate as train: val: test = 70: 15: 15
-    val_and_test_rate = 0.20
+    # val_and_test_rate = 0.20
 
-    len_val = int(math.floor(data_col * val_and_test_rate))
-    len_test = int(math.floor(data_col * val_and_test_rate))
+    # len_val = int(math.floor(data_col * val_and_test_rate))
+    # len_test = int(math.floor(data_col * val_and_test_rate))
+    # len_train = int(data_col - len_val - len_test)
+    len_test = 2
+    len_val = 2
     len_train = int(data_col - len_val - len_test)
-
+    
     train, val, test = dataloader.load_data(args.dataset, len_train, len_val)
     zscore = preprocessing.StandardScaler()
     train = zscore.fit_transform(train)
