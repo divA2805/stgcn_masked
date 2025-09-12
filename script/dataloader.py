@@ -39,8 +39,8 @@ def data_transform(data, n_his, n_pred, device):
     print("n_his:", n_his)
     print("n_pred:", n_pred)
     print("num:", num)
-    if num <= 0:
-        raise ValueError(f"Not enough data: {len_record=} {n_his=} {n_pred=} {num=}")
+    #if num <= 0:
+       # raise ValueError(f"Not enough data: {len_record=} {n_his=} {n_pred=} {num=}")
     x = np.zeros([num, 1, n_his, n_vertex])
     y = np.zeros([num, n_vertex])
     
