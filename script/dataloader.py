@@ -35,7 +35,8 @@ def data_transform(data, n_his, n_pred, device):
     n_vertex = data.shape[1]
     len_record = len(data)
     num = len_record - n_his - n_pred
-    
+    if num <= 0:
+        raise ValueError(f"Not enough data: {len_record=} {n_his=} {n_pred=} {num=}")
     x = np.zeros([num, 1, n_his, n_vertex])
     y = np.zeros([num, n_vertex])
     
