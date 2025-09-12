@@ -44,7 +44,7 @@ def get_parameters():
     parser.add_argument('--n_his', type=int, default=3)
     parser.add_argument('--n_pred', type=int, default=1, help='the number of time interval for predcition, default as 1')
     parser.add_argument('--time_intvl', type=int, default=5)
-    parser.add_argument('--Kt', type=int, default=3)
+    parser.add_argument('--Kt', type=int, default=2)
     parser.add_argument('--stblock_num', type=int, default=2)
     parser.add_argument('--act_func', type=str, default='glu', choices=['glu', 'gtu'])
     parser.add_argument('--Ks', type=int, default=3, choices=[3, 2])
