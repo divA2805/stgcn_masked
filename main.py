@@ -107,7 +107,7 @@ def data_preparate(args, device):
     data_col = pd.read_csv(os.path.join(dataset_path, 'vel.csv')).shape[0]
     # recommended dataset split rate as train: val: test = 60: 20: 20, 70: 15: 15 or 80: 10: 10
     # using dataset split rate as train: val: test = 70: 15: 15
-    val_and_test_rate = 0.15
+    val_and_test_rate = 0.20
 
     len_val = int(math.floor(data_col * val_and_test_rate))
     len_test = int(math.floor(data_col * val_and_test_rate))
