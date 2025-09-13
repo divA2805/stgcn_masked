@@ -64,7 +64,8 @@ def calc_chebynet_gso(gso):
 
     id = sp.identity(gso.shape[0], format='csc')
     # If you encounter a NotImplementedError, please update your scipy version to 1.10.1 or later.    
-    eigval_max = norm(gso, 2)
+    # eigval_max = norm(gso, 2)
+    eigval_max = np.linalg.eigvalsh(gso.toarray()).max()
 
     # If the gso is symmetric or random walk normalized Laplacian,
     # then the maximum eigenvalue is smaller than or equals to 2.
