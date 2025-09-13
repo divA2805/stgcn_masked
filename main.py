@@ -166,6 +166,8 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter):
             optimizer.zero_grad()
             #y_pred = model(x).view(len(x), -1)  # [batch_size, num_nodes]
             y_pred = model(x).reshape(len(x), -1)
+            print('y_pred.shape:', y_pred.shape)
+            print('y.shape:', y.shape)
             l = loss(y_pred, y)
             l.backward()
             optimizer.step()
