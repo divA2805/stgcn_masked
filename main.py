@@ -173,14 +173,14 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter):
                     # 
                     # 
             out = model(x)
-            print("Raw model output shape:", out.shape)
+            # print("Raw model output shape:", out.shape)
             if out.shape[1] == 1:
                 y_pred = out[:, 0, :]       
             else:
                 y_pred = out[:, -1, :]      
             
-            print('y_pred.shape:', y_pred.shape)
-            print('y.shape:', y.shape)
+            # print('y_pred.shape:', y_pred.shape)
+            # print('y.shape:', y.shape)
                     # 
                     # 
             l = loss(y_pred, y)
