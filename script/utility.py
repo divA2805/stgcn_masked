@@ -109,7 +109,9 @@ def evaluate_metric(model, data_iter, scaler):
         mae, sum_y, mape, mse = [], [], [], []
         for x, y in data_iter:
             y = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
-            y_pred = scaler.inverse_transform(model(x).view(len(x), -1).cpu().numpy()).reshape(-1)
+            out = model(x)
+            y_pred = out[:, -1, 0, :]
+            y_pred = scaler.inverse_transform(y_pred.cpu().numpy()).reshape(-1)
             d = np.abs(y - y_pred)
             mae += d.tolist()
             sum_y += y.tolist()
