@@ -207,7 +207,8 @@ def val(model, val_iter):
     l_sum, n = 0.0, 0
     for x, y in val_iter:
         # y_pred = model(x).view(len(x), -1)
-        y_pred = y_pred.reshape(y.shape)
+        out = model(x)
+        y_pred = out[:, -1, 0, :]
         l = loss(y_pred, y)
         l_sum += l.item() * y.shape[0]
         n += y.shape[0]
