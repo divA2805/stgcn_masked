@@ -221,7 +221,7 @@ def test(zscore, loss, model, test_iter, args):
 
     test_MSE = utility.evaluate_model(model, loss, test_iter)
     test_MAE, test_RMSE, test_WMAPE, test_R2 = utility.evaluate_metric(model, test_iter, zscore)
-    print(f"Test loss {test_loss:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f} | R2 {test_R2:.4f}")
+    print(f"Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f} | R2 {test_R2:.4f}")
 
 if __name__ == "__main__":
     # Logging
