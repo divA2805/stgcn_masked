@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import norm
 import torch
+from sklearn.metrics import r2_score
 
 def calc_gso(dir_adj, gso_type):
     n_vertex = dir_adj.shape[0]
@@ -118,10 +119,14 @@ def evaluate_metric(model, data_iter, scaler):
             sum_y += y.tolist()
             mape += (d / y).tolist()
             mse += (d ** 2).tolist()
+            # Collect for R2
+            all_y.extend(y.tolist())
+            all_y_pred.extend(y_pred.tolist())
         MAE = np.array(mae).mean()
         #MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
         WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
-
-        #return MAE, MAPE, RMSE
-        return MAE, RMSE, WMAPE
+        # Calculate R2 Score
+        r2 = r2_score(all_y, all_y_pred)
+        return MAE, RMSE, WMAPE, r2
+        
