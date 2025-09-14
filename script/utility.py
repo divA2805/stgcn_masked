@@ -109,6 +109,8 @@ def evaluate_metric(model, data_iter, scaler):
     model.eval()
     with torch.no_grad():
         mae, sum_y, mape, mse = [], [], [], []
+        all_y = []
+        all_y_pred = []
         for x, y in data_iter:
             y = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
             out = model(x)
