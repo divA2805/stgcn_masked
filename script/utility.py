@@ -4,6 +4,17 @@ from scipy.sparse.linalg import norm
 import torch
 from sklearn.metrics import r2_score
 
+def get_station_masks(vel_path):
+    """
+    Returns boolean masks for labeled and target stations.
+    Labeled: columns with any nonzero value across all timesteps.
+    Target: columns with all zero values (to be predicted).
+    """
+    vel = np.loadtxt(vel_path, delimiter=',')  # shape: (timesteps, stations)
+    is_labeled = ~(np.all(vel == 0, axis=0))  # True for columns with at least one nonzero
+    is_target = np.all(vel == 0, axis=0)      # True for columns that are all zeros
+    return is_labeled, is_target
+
 def calc_gso(dir_adj, gso_type):
     n_vertex = dir_adj.shape[0]
 
