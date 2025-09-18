@@ -100,15 +100,18 @@ def cnv_sparse_mat_to_coo_tensor(sp_mat, device):
     else:
         raise TypeError(f'ERROR: The dtype of {sp_mat} is {sp_mat.dtype}, not been applied in implemented models.')
 
-def evaluate_model(model, loss, data_iter):
+def evaluate_model(model, loss, data_iter, mask=None):
     model.eval()
     l_sum, n = 0.0, 0
     with torch.no_grad():
         for x, y in data_iter:
             out = model(x)
                 # If out.shape is [batch_size, 64, 1, 112]:
-            y_pred = out[:, -1, 0, :]
-            # y_pred = model(x).view(len(x), -1)
+            #y_pred = out[:, -1, 0, :]
+            y_pred= out[:,-1, :]
+            if mask is not None:
+                y_pred = y_pred[:, mask]
+                y = y[:, mask]
             l = loss(y_pred, y)
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
@@ -123,22 +126,28 @@ def evaluate_metric(model, data_iter, scaler):
         all_y = []
         all_y_pred = []
         for x, y in data_iter:
-            y = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
+            if mask is not None:
+            y = y[:, mask]
+            
+            y_np = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
             out = model(x)
-            y_pred = out[:, -1, 0, :]
-            y_pred = scaler.inverse_transform(y_pred.cpu().numpy()).reshape(-1)
-            d = np.abs(y - y_pred)
+            #y_pred = out[:, -1, 0, :]
+            y_pred = out[:, -1, :]
+            if mask is not None:
+                y_pred = y_pred[:, mask]
+            y_pred_np = scaler.inverse_transform(y_pred.cpu().numpy()).reshape(-1)
+            d = np.abs(y_np - y_pred_np)
             mae += d.tolist()
-            sum_y += y.tolist()
-            mape += (d / y).tolist()
+            sum_y += y_np.tolist()
+            mape += (d / (y_np + 1e-8)).tolist()  # add small epsilon to avoid division by zero
             mse += (d ** 2).tolist()
-            # Collect for R2
-            all_y.extend(y.tolist())
-            all_y_pred.extend(y_pred.tolist())
+            all_y.extend(y_np.tolist())
+            all_y_pred.extend(y_pred_np.tolist())
         MAE = np.array(mae).mean()
         #MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
-        WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
+        #WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
+        WMAPE = np.sum(np.array(mae)) / (np.sum(np.array(sum_y)) + 1e-8)
         # Calculate R2 Score
         r2 = r2_score(all_y, all_y_pred)
         return MAE, RMSE, WMAPE, r2
