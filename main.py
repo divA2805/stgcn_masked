@@ -173,8 +173,6 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_
             # y_pred = model(x).reshape(len(x), -1)
             # print('y_pred.shape:', y_pred.shape)
             # print('y.shape:', y.shape)
-                    # 
-                    # 
             out = model(x)
             # print("Raw model output shape:", out.shape)
             y_pred = out[:, -1, :]       
