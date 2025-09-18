@@ -211,8 +211,7 @@ def val(model, val_iter, is_labeled, loss):
 
     l_sum, n = 0.0, 0
     for x, y in val_iter:
-        # y_pred = model(x).view(len(x), -1)
-       out = model(x)
+        out = model(x)
         print("val out.shape:", out.shape)
         y_pred = out[:, -1, ...]
         print("val y_pred.shape after slicing:", y_pred.shape)
