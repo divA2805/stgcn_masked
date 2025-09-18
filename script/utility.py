@@ -106,9 +106,10 @@ def evaluate_model(model, loss, data_iter, mask=None):
     with torch.no_grad():
         for x, y in data_iter:
             out = model(x)
-                # If out.shape is [batch_size, 64, 1, 112]:
-            #y_pred = out[:, -1, 0, :]
-            y_pred= out[:, -1, :]
+            y_pred = out[:, -1, ...]  # [batch, 1, n_nodes] or [batch, n_nodes]
+            # Squeeze if necessary
+            if y_pred.dim() == 3 and y_pred.shape[1] == 1:
+                y_pred = y_pred.squeeze(1)  # [batch, n_nodes]
             if mask is not None:
                 y_pred = y_pred[:, mask]
                 y = y[:, mask]
@@ -116,7 +117,6 @@ def evaluate_model(model, loss, data_iter, mask=None):
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
         mse = l_sum / n
-        
         return mse
 
 def evaluate_metric(model, data_iter, scaler, mask=None):
@@ -128,11 +128,12 @@ def evaluate_metric(model, data_iter, scaler, mask=None):
         for x, y in data_iter:
             if mask is not None:
                 y = y[:, mask]
-            
             y_np = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
             out = model(x)
-            #y_pred = out[:, -1, 0, :]
-            y_pred = out[:, -1, :]
+            y_pred = out[:, -1, ...]  # [batch, 1, n_nodes] or [batch, n_nodes]
+            # Squeeze if necessary
+            if y_pred.dim() == 3 and y_pred.shape[1] == 1:
+                y_pred = y_pred.squeeze(1)  # [batch, n_nodes]
             if mask is not None:
                 y_pred = y_pred[:, mask]
             y_pred_np = scaler.inverse_transform(y_pred.cpu().numpy()).reshape(-1)
