@@ -173,14 +173,20 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_
             # y_pred = model(x).reshape(len(x), -1)
             # print('y_pred.shape:', y_pred.shape)
             # print('y.shape:', y.shape)
-            out = model(x)
-            # print("Raw model output shape:", out.shape)
-            y_pred = out[:, -1, :]       
-            # print('y_pred.shape:', y_pred.shape)
-            # print('y.shape:', y.shape)
-            # Mask loss for labeled stations only
+            # After getting output from your model
+            out = model(x)  # shape: [batch_size, n_pred, n_nodes]
+            print("out.shape:", out.shape)
+            print("is_labeled.shape:", is_labeled.shape)
+            print("is_labeled type:", type(is_labeled), "is_labeled dtype:", getattr(is_labeled, "dtype", None))
+
+            y_pred = out[:, -1, :]  # [batch_size, n_nodes]
+            print("y_pred.shape after slicing:", y_pred.shape)
+
+            # Now mask
             y_pred_masked = y_pred[:, is_labeled]
-            y_masked = y[:, is_labeled]    
+            y_masked = y[:, is_labeled]
+            print("y_pred_masked.shape:", y_pred_masked.shape)
+            print("y_masked.shape:", y_masked.shape)    
             l = loss(y_pred_masked, y_masked)
             l.backward()
             optimizer.step()
