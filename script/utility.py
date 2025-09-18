@@ -127,7 +127,7 @@ def evaluate_metric(model, data_iter, scaler):
         all_y_pred = []
         for x, y in data_iter:
             if mask is not None:
-            y = y[:, mask]
+                y = y[:, mask]
             
             y_np = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
             out = model(x)
