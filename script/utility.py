@@ -119,7 +119,7 @@ def evaluate_model(model, loss, data_iter, mask=None):
         
         return mse
 
-def evaluate_metric(model, data_iter, scaler):
+def evaluate_metric(model, data_iter, scaler mask=None):
     model.eval()
     with torch.no_grad():
         mae, sum_y, mape, mse = [], [], [], []
