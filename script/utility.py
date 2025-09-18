@@ -108,7 +108,7 @@ def evaluate_model(model, loss, data_iter, mask=None):
             out = model(x)
                 # If out.shape is [batch_size, 64, 1, 112]:
             #y_pred = out[:, -1, 0, :]
-            y_pred= out[:,-1, :]
+            y_pred= out[:, -1, :]
             if mask is not None:
                 y_pred = y_pred[:, mask]
                 y = y[:, mask]
