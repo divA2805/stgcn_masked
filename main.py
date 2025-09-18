@@ -174,19 +174,20 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_
             # print('y_pred.shape:', y_pred.shape)
             # print('y.shape:', y.shape)
             # After getting output from your model
-            out = model(x)  # shape: [batch_size, n_pred, n_nodes]
+            out = model(x)                   # e.g. [batch, n_pred, 1, n_nodes] or [batch, n_pred, n_nodes]
             print("out.shape:", out.shape)
-            print("is_labeled.shape:", is_labeled.shape)
-            print("is_labeled type:", type(is_labeled), "is_labeled dtype:", getattr(is_labeled, "dtype", None))
-
-            y_pred = out[:, -1, :]  # [batch_size, n_nodes]
+            y_pred = out[:, -1, ...]         # Select last time step, shape: [batch, 1, n_nodes] or [batch, n_nodes]
             print("y_pred.shape after slicing:", y_pred.shape)
 
-            # Now mask
+            # If y_pred has a singleton dimension, remove it
+            if y_pred.dim() == 3 and y_pred.shape[1] == 1:
+                y_pred = y_pred.squeeze(1)   # Result: [batch, n_nodes]
+                print("y_pred.shape after squeeze:", y_pred.shape)
+
             y_pred_masked = y_pred[:, is_labeled]
             y_masked = y[:, is_labeled]
             print("y_pred_masked.shape:", y_pred_masked.shape)
-            print("y_masked.shape:", y_masked.shape)    
+            print("y_masked.shape:", y_masked.shape)
             l = loss(y_pred_masked, y_masked)
             l.backward()
             optimizer.step()
@@ -211,11 +212,17 @@ def val(model, val_iter, is_labeled, loss):
     l_sum, n = 0.0, 0
     for x, y in val_iter:
         # y_pred = model(x).view(len(x), -1)
-        out = model(x)
-        y_pred = out[:, -1, :]
+       out = model(x)
+        print("val out.shape:", out.shape)
+        y_pred = out[:, -1, ...]
+        print("val y_pred.shape after slicing:", y_pred.shape)
+        if y_pred.dim() == 3 and y_pred.shape[1] == 1:
+            y_pred = y_pred.squeeze(1)
+            print("val y_pred.shape after squeeze:", y_pred.shape)
         y_pred_masked = y_pred[:, is_labeled]
-        y_masked=y[:, is_labeled]
-       # l = loss(y_pred, y)
+        y_masked = y[:, is_labeled]
+        print("val y_pred_masked.shape:", y_pred_masked.shape)
+        print("val y_masked.shape:", y_masked.shape)
         l = loss(y_pred_masked, y_masked)
         l_sum += l.item() * y.shape[0]
         n += y.shape[0]
