@@ -17,6 +17,8 @@ import torch.utils as utils
 
 from script import dataloader, utility, earlystopping, opt
 from model import models
+from script.utility import get_station_masks
+
 
 #import nni
 
@@ -92,6 +94,8 @@ def get_parameters():
     blocks.append([1])
     
     return args, device, blocks
+
+is_labeled, is_target = get_station_masks(f'./data/{args.dataset}/vel.csv')
 
 def data_preparate(args, device):    
     adj, n_vertex = dataloader.load_adj(args.dataset)
@@ -181,8 +185,9 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter):
             
             # print('y_pred.shape:', y_pred.shape)
             # print('y.shape:', y.shape)
-                    # 
-                    # 
+            # Mask loss for labeled stations only
+            y_pred_masked = y_pred[:, is_labeled]
+            y_masked = y[:, is_labeled]    
             l = loss(y_pred, y)
             l.backward()
             optimizer.step()
@@ -219,8 +224,8 @@ def test(zscore, loss, model, test_iter, args):
     model.load_state_dict(torch.load("STGCN_" + args.dataset + ".pt"))
     model.eval()
 
-    test_MSE = utility.evaluate_model(model, loss, test_iter)
-    test_MAE, test_RMSE, test_WMAPE, test_R2 = utility.evaluate_metric(model, test_iter, zscore)
+    test_MSE = utility.evaluate_model(model, loss, test_iter, mask=is_target)
+    test_MAE, test_RMSE, test_WMAPE, test_R2 = utility.evaluate_metric(model, test_iter, zscore, mask=is_target)
     print(f"Test loss {test_MSE:.6f} | MAE {test_MAE:.6f} | RMSE {test_RMSE:.6f} | WMAPE {test_WMAPE:.8f} | R2 {test_R2:.4f}")
 
 if __name__ == "__main__":
