@@ -177,11 +177,7 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_
                     # 
             out = model(x)
             # print("Raw model output shape:", out.shape)
-            if out.shape[1] == 1:
-                y_pred = out[:, 0, :]       
-            else:
-                y_pred = out[:, -1, :]      
-            
+            y_pred = out[:, -1, :]       
             # print('y_pred.shape:', y_pred.shape)
             # print('y.shape:', y.shape)
             # Mask loss for labeled stations only
@@ -212,10 +208,7 @@ def val(model, val_iter, is_labeled, loss):
     for x, y in val_iter:
         # y_pred = model(x).view(len(x), -1)
         out = model(x)
-        if out.shape[1] == 1:
-            y_pred = out[:, 0, :]
-        else:
-            y_pred = out[:, -1, :]
+        y_pred = out[:, -1, :]
         y_pred_masked = y_pred[:, is_labeled]
         y_masked=y[:, is_labeled]
        # l = loss(y_pred, y)
