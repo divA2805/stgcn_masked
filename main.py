@@ -193,7 +193,7 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
         scheduler.step()
-        val_loss = val(model, val_iter)
+        val_loss = val(model, val_iter, is_labeled, loss)
         # GPU memory usage
         gpu_mem_alloc = torch.cuda.max_memory_allocated() / 1000000 if torch.cuda.is_available() else 0
         print('Epoch: {:03d} | Lr: {:.20f} |Train loss: {:.6f} | Val loss: {:.6f} | GPU occupy: {:.6f} MiB'.\
@@ -205,7 +205,7 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_
             break
 
 @torch.no_grad()
-def val(model, val_iter, is_labeled):
+def val(model, val_iter, is_labeled, loss):
     model.eval()
 
     l_sum, n = 0.0, 0
@@ -219,7 +219,7 @@ def val(model, val_iter, is_labeled):
         y_pred_masked = y_pred[:, is_labeled]
         y_masked=y[:, is_labeled]
        # l = loss(y_pred, y)
-        l = nn.MSELoss()(y_pred_masked, y_masked)
+        l = loss(y_pred_masked, y_masked)
         l_sum += l.item() * y.shape[0]
         n += y.shape[0]
     return torch.tensor(l_sum / n)
