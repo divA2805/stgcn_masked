@@ -95,7 +95,7 @@ def get_parameters():
     
     return args, device, blocks
 
-is_labeled, is_target = get_station_masks(f'./data/{args.dataset}/vel.csv')
+    is_labeled, is_target = get_station_masks(f'./data/{args.dataset}/vel.csv')
 
 def data_preparate(args, device):    
     adj, n_vertex = dataloader.load_adj(args.dataset)
