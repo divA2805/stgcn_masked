@@ -95,8 +95,7 @@ def get_parameters():
     
     return args, device, blocks
 
-    is_labeled, is_target = get_station_masks(f'./data/{args.dataset}/vel.csv')
-
+    
 def data_preparate(args, device):    
     adj, n_vertex = dataloader.load_adj(args.dataset)
     gso = utility.calc_gso(adj, args.gso_type)
@@ -162,7 +161,7 @@ def prepare_model(args, blocks, n_vertex):
 
     return loss, es, model, optimizer, scheduler
 
-def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter):
+def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_labeled):
     for epoch in range(args.epochs):
         l_sum, n = 0.0, 0  # 'l_sum' is epoch sum loss, 'n' is epoch instance number
         model.train()
@@ -188,7 +187,7 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter):
             # Mask loss for labeled stations only
             y_pred_masked = y_pred[:, is_labeled]
             y_masked = y[:, is_labeled]    
-            l = loss(y_pred, y)
+            l = loss(y_pred_masked, y_masked)
             l.backward()
             optimizer.step()
             l_sum += l.item() * y.shape[0]
@@ -206,21 +205,27 @@ def train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter):
             break
 
 @torch.no_grad()
-def val(model, val_iter):
+def val(model, val_iter, is_labeled):
     model.eval()
 
     l_sum, n = 0.0, 0
     for x, y in val_iter:
         # y_pred = model(x).view(len(x), -1)
         out = model(x)
-        y_pred = out[:, -1, 0, :]
-        l = loss(y_pred, y)
+        if out.shape[1] == 1:
+            y_pred = out[:, 0, :]
+        else:
+            y_pred = out[:, -1, :]
+        y_pred_masked = y_pred[:, is_labeled]
+        y_masked=y[:, is_labeled]
+       # l = loss(y_pred, y)
+        l = nn.MSELoss()(y_pred_masked, y_masked)
         l_sum += l.item() * y.shape[0]
         n += y.shape[0]
     return torch.tensor(l_sum / n)
 
 @torch.no_grad() 
-def test(zscore, loss, model, test_iter, args):
+def test(zscore, loss, model, test_iter, args, is_target):
     model.load_state_dict(torch.load("STGCN_" + args.dataset + ".pt"))
     model.eval()
 
@@ -238,7 +243,8 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=UserWarning)
 
     args, device, blocks = get_parameters()
+    is_labeled, is_target = get_station_masks(f'./data/{args.dataset}/vel.csv')
     n_vertex, zscore, train_iter, val_iter, test_iter = data_preparate(args, device)
     loss, es, model, optimizer, scheduler = prepare_model(args, blocks, n_vertex)
-    train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter)
-    test(zscore, loss, model, test_iter, args)
+    train(args, model, loss, optimizer, scheduler, es, train_iter, val_iter, is_labeled)
+    test(zscore, loss, model, test_iter, args, is_target)
