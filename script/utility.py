@@ -119,6 +119,39 @@ def evaluate_model(model, loss, data_iter, mask=None):
         mse = l_sum / n
         return mse
 
+# def evaluate_metric(model, data_iter, scaler, mask=None):
+#     model.eval()
+#     with torch.no_grad():
+#         mae, sum_y, mape, mse = [], [], [], []
+#         all_y = []
+#         all_y_pred = []
+#         for x, y in data_iter:
+#             if mask is not None:
+#                 y = y[:, mask]
+#             y_np = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
+#             out = model(x)
+#             y_pred = out[:, -1, ...]  # [batch, 1, n_nodes] or [batch, n_nodes]
+#             # Squeeze if necessary
+#             if y_pred.dim() == 3 and y_pred.shape[1] == 1:
+#                 y_pred = y_pred.squeeze(1)  # [batch, n_nodes]
+#             if mask is not None:
+#                 y_pred = y_pred[:, mask]
+#             y_pred_np = scaler.inverse_transform(y_pred.cpu().numpy()).reshape(-1)
+#             d = np.abs(y_np - y_pred_np)
+#             mae += d.tolist()
+#             sum_y += y_np.tolist()
+#             mape += (d / (y_np + 1e-8)).tolist()  # add small epsilon to avoid division by zero
+#             mse += (d ** 2).tolist()
+#             all_y.extend(y_np.tolist())
+#             all_y_pred.extend(y_pred_np.tolist())
+#         MAE = np.array(mae).mean()
+#         #MAPE = np.array(mape).mean()
+#         RMSE = np.sqrt(np.array(mse).mean())
+#         #WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
+#         WMAPE = np.sum(np.array(mae)) / (np.sum(np.array(sum_y)) + 1e-8)
+#         # Calculate R2 Score
+#         r2 = r2_score(all_y, all_y_pred)
+#         return MAE, RMSE, WMAPE, r2
 def evaluate_metric(model, data_iter, scaler, mask=None):
     model.eval()
     with torch.no_grad():
@@ -126,30 +159,30 @@ def evaluate_metric(model, data_iter, scaler, mask=None):
         all_y = []
         all_y_pred = []
         for x, y in data_iter:
-            if mask is not None:
-                y = y[:, mask]
-            y_np = scaler.inverse_transform(y.cpu().numpy()).reshape(-1)
+            y_np_full = scaler.inverse_transform(y.cpu().numpy())  # [batch, n_nodes]
             out = model(x)
-            y_pred = out[:, -1, ...]  # [batch, 1, n_nodes] or [batch, n_nodes]
-            # Squeeze if necessary
+            y_pred = out[:, -1, ...]
             if y_pred.dim() == 3 and y_pred.shape[1] == 1:
                 y_pred = y_pred.squeeze(1)  # [batch, n_nodes]
+            y_pred_np_full = scaler.inverse_transform(y_pred.cpu().numpy())
             if mask is not None:
-                y_pred = y_pred[:, mask]
-            y_pred_np = scaler.inverse_transform(y_pred.cpu().numpy()).reshape(-1)
+                y_np = y_np_full[:, mask]
+                y_pred_np = y_pred_np_full[:, mask]
+            else:
+                y_np = y_np_full
+                y_pred_np = y_pred_np_full
+            y_np = y_np.reshape(-1)
+            y_pred_np = y_pred_np.reshape(-1)
             d = np.abs(y_np - y_pred_np)
             mae += d.tolist()
             sum_y += y_np.tolist()
-            mape += (d / (y_np + 1e-8)).tolist()  # add small epsilon to avoid division by zero
+            mape += (d / (y_np + 1e-8)).tolist()
             mse += (d ** 2).tolist()
             all_y.extend(y_np.tolist())
             all_y_pred.extend(y_pred_np.tolist())
         MAE = np.array(mae).mean()
-        #MAPE = np.array(mape).mean()
         RMSE = np.sqrt(np.array(mse).mean())
-        #WMAPE = np.sum(np.array(mae)) / np.sum(np.array(sum_y))
         WMAPE = np.sum(np.array(mae)) / (np.sum(np.array(sum_y)) + 1e-8)
-        # Calculate R2 Score
         r2 = r2_score(all_y, all_y_pred)
         return MAE, RMSE, WMAPE, r2
         
